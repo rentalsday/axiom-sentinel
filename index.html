@@ -13,71 +13,86 @@
         .accent-border { border-top: 4px solid #3b82f6; }
         .shimmer { background: linear-gradient(90deg, #0f0f12 25%, #1a1a1e 50%, #0f0f12 75%); background-size: 200% 100%; animation: shimmer 2s infinite; }
         @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        .blur-text { filter: blur(5px); user-select: none; pointer-events: none; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center p-6 md:p-12">
 
     <div class="w-full max-w-3xl text-center mb-12">
         <h1 class="text-3xl font-bold tracking-tighter text-white mb-2">AXIOM <span class="text-blue-500">SENTINEL</span></h1>
-        <p class="text-zinc-500 text-sm uppercase tracking-widest">Autonomous M&A Risk Intelligence</p>
+        <p class="text-zinc-500 text-sm uppercase tracking-widest text-xs">Autonomous M&A Risk Intelligence</p>
     </div>
 
     <div class="w-full max-w-3xl space-y-6">
         
-        <div id="paymentWall" class="legal-card p-8 accent-border text-center">
-            <h2 class="text-xl font-semibold mb-4 text-white">Access Premium Audit</h2>
-            <p class="text-zinc-400 mb-6 text-sm">One-time audit fee: <span class="text-white font-bold">$499</span>. Includes full Change of Control analysis and Redline Drafts.</p>
-            <a href="YOUR_STRIPE_PAYMENT_LINK_HERE" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition-all w-full md:w-auto">
-                Pay to Unlock Auditor
-            </a>
-            <p class="mt-4 text-xs text-zinc-600">Secure payment via Stripe. Instant access post-purchase.</p>
-        </div>
-
-        <div id="uploadZone" class="hidden legal-card p-12 border-2 border-dashed border-zinc-800 hover:border-blue-500 transition-all cursor-pointer text-center">
+        <div id="uploadZone" class="legal-card p-12 border-2 border-dashed border-zinc-800 hover:border-blue-500 transition-all cursor-pointer text-center">
             <input type="file" id="pdfInput" class="hidden" accept="application/pdf">
             <div class="space-y-4">
                 <div class="text-blue-500 text-4xl mx-auto">📄</div>
-                <h3 class="text-lg font-medium">Upload Warrant / Agreement</h3>
-                <p class="text-zinc-500 text-sm">Drag & Drop your PDF to begin the Agentic Audit</p>
+                <h3 class="text-lg font-medium text-white">Upload Agreement for Instant Triage</h3>
+                <p class="text-zinc-500 text-sm">Drag & Drop PDF to generate Risk Score and Sneak Preview</p>
             </div>
         </div>
 
         <div id="processing" class="hidden legal-card p-12 shimmer text-center">
-            <p class="text-blue-400 font-semibold animate-pulse">AXIOM AGENT IS ANALYZING DOCUMENT SECTIONS...</p>
-            <p class="text-xs text-zinc-500 mt-2">Drafting Redline Fixes & Checking Compliance Gaps</p>
+            <p class="text-blue-400 font-semibold animate-pulse uppercase tracking-widest text-xs">Axiom Agent is Analyzing Clauses...</p>
         </div>
 
-        <div id="reportSection" class="hidden space-y-4">
+        <div id="previewSection" class="hidden space-y-6 animate-in fade-in duration-700">
+            <div class="legal-card p-6 border-l-4 border-yellow-500 bg-yellow-500/5">
+                <h3 class="text-yellow-500 font-bold text-sm uppercase mb-2">Preliminary Audit Complete</h3>
+                <div id="previewData" class="space-y-2">
+                    </div>
+            </div>
+
+            <div id="paymentWall" class="legal-card p-8 accent-border text-center shadow-2xl">
+                <h2 class="text-xl font-semibold mb-2 text-white">Unlock Full Risk Report</h2>
+                <p class="text-zinc-400 mb-6 text-sm">The agent has identified critical vulnerabilities and drafted <span class="text-white">Redline Fixes</span>. Pay to reveal the full audit.</p>
+                <a href="YOUR_STRIPE_PAYMENT_LINK_HERE" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition-all w-full md:w-auto">
+                    Unlock Full Report ($499)
+                </a>
+            </div>
+
+            <div class="legal-card p-8 blur-text opacity-40">
+                <p>RED FLAGS: - Missing Change of Control protection in Section 4... PROPOSED REDLINE: The Company shall provide notice...</p>
+                <p>SUMMARY: This instrument poses significant dilutive risk...</p>
+            </div>
+        </div>
+
+        <div id="fullReportSection" class="hidden space-y-4">
             <div class="flex justify-between items-center">
-                <h2 class="text-xl font-bold text-white">Audit Results</h2>
+                <h2 class="text-xl font-bold text-white">Full Audit Results</h2>
                 <button onclick="window.print()" class="text-xs bg-zinc-800 hover:bg-zinc-700 px-4 py-2 rounded text-white border border-zinc-700 transition-colors">Export to PDF</button>
             </div>
-            <div id="reportOutput" class="legal-card p-8 text-sm leading-relaxed text-zinc-300 overflow-y-auto max-h-[600px] whitespace-pre-wrap">
-                </div>
-            <p class="text-[10px] text-zinc-600 text-center italic">Axiom Sentinel Proprietary Audit Engine v4.1</p>
+            <div id="fullReportOutput" class="legal-card p-8 text-sm leading-relaxed text-zinc-300 whitespace-pre-wrap">
+            </div>
+            <p class="text-[10px] text-zinc-600 text-center italic">Axiom Sentinel Proprietary Audit Engine v4.1 - Verified Transaction</p>
         </div>
     </div>
 
     <script>
-        // --- DOM ELEMENTS ---
-        const paymentWall = document.getElementById('paymentWall');
         const uploadZone = document.getElementById('uploadZone');
         const processing = document.getElementById('processing');
-        const reportSection = document.getElementById('reportSection');
-        const reportOutput = document.getElementById('reportOutput');
+        const previewSection = document.getElementById('previewSection');
+        const previewData = document.getElementById('previewData');
+        const paymentWall = document.getElementById('paymentWall');
+        const fullReportSection = document.getElementById('fullReportSection');
+        const fullReportOutput = document.getElementById('fullReportOutput');
         const pdfInput = document.getElementById('pdfInput');
 
         // --- STRIPE SUCCESS CHECK ---
-        // Checks URL for ?session_id=... which Stripe provides on redirect
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has('session_id')) {
-            paymentWall.classList.add('hidden');
-            uploadZone.classList.remove('hidden');
-            // Clean the URL so refresh doesn't look messy
+            // Restore data from local storage if returning from Stripe
+            const savedReport = localStorage.getItem('lastReport');
+            if (savedReport) {
+                uploadZone.classList.add('hidden');
+                fullReportOutput.textContent = savedReport;
+                fullReportSection.classList.remove('hidden');
+            }
             window.history.replaceState({}, document.title, window.location.pathname);
         }
 
-        // --- UPLOAD LOGIC ---
         uploadZone.onclick = () => pdfInput.click();
 
         pdfInput.onchange = async (e) => {
@@ -88,7 +103,6 @@
             processing.classList.remove('hidden');
 
             try {
-                // 1. PDF Text Extraction
                 const arrayBuffer = await file.arrayBuffer();
                 const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
                 let text = "";
@@ -98,24 +112,29 @@
                     text += content.items.map(s => s.str).join(" ");
                 }
 
-                // 2. SECURE SERVERLESS FETCH
-                // We send the text to our internal /api/audit route on Vercel
                 const response = await fetch('/api/audit', {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ 
-                        text: text.substring(0, 50000) // Safeguard for Grok's context window
-                    })
+                    body: JSON.stringify({ text: text.substring(0, 50000) })
                 });
 
-                if (!response.ok) throw new Error("Audit service unavailable. Contact support.");
-
                 const data = await response.json();
-                
-                // 3. Render Result
-                reportOutput.textContent = data.choices[0].message.content;
+                const fullText = data.choices[0].message.content;
+
+                // Save to local storage so it survives the Stripe redirect
+                localStorage.setItem('lastReport', fullText);
+
+                // Extract Title and Score for the Sneak Preview
+                const titleMatch = fullText.match(/DOCUMENT TITLE: (.*)/);
+                const scoreMatch = fullText.match(/RISK SCORE: (.*)/);
+
+                previewData.innerHTML = `
+                    <p class="text-white text-lg font-bold">${titleMatch ? titleMatch[0] : 'Document Analysis Ready'}</p>
+                    <p class="text-zinc-400 font-mono">${scoreMatch ? scoreMatch[0] : 'Risk Score: Calculated'}</p>
+                `;
+
                 processing.classList.add('hidden');
-                reportSection.classList.remove('hidden');
+                previewSection.classList.remove('hidden');
 
             } catch (err) {
                 alert("Audit Error: " + err.message);
