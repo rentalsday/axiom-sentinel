@@ -49,19 +49,16 @@
 
         <div id="reportSection" class="hidden space-y-4">
             <div class="flex justify-between items-center">
-                <h2 class="text-xl font-bold">Audit Results</h2>
-                <button onclick="window.print()" class="text-xs bg-zinc-800 hover:bg-zinc-700 px-4 py-2 rounded">Export to PDF</button>
+                <h2 class="text-xl font-bold text-white">Audit Results</h2>
+                <button onclick="window.print()" class="text-xs bg-zinc-800 hover:bg-zinc-700 px-4 py-2 rounded text-white border border-zinc-700 transition-colors">Export to PDF</button>
             </div>
             <div id="reportOutput" class="legal-card p-8 text-sm leading-relaxed text-zinc-300 overflow-y-auto max-h-[600px] whitespace-pre-wrap">
                 </div>
+            <p class="text-[10px] text-zinc-600 text-center italic">Axiom Sentinel Proprietary Audit Engine v4.1</p>
         </div>
     </div>
 
     <script>
-        // --- CONFIGURATION ---
-        const GROK_API_KEY = "YOUR_GROK_API_KEY_HERE"; // PASTE YOUR KEY HERE
-        const STRIPE_LINK = "YOUR_STRIPE_PAYMENT_LINK_HERE"; // PASTE YOUR STRIPE LINK HERE
-
         // --- DOM ELEMENTS ---
         const paymentWall = document.getElementById('paymentWall');
         const uploadZone = document.getElementById('uploadZone');
@@ -70,11 +67,17 @@
         const reportOutput = document.getElementById('reportOutput');
         const pdfInput = document.getElementById('pdfInput');
 
-        // BYPASS LOGIC: For your testing, we show upload. 
-        // In real life, you'd trigger this after Stripe redirects back.
-        uploadZone.classList.remove('hidden'); 
-        paymentWall.classList.add('hidden');
+        // --- STRIPE SUCCESS CHECK ---
+        // Checks URL for ?session_id=... which Stripe provides on redirect
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('session_id')) {
+            paymentWall.classList.add('hidden');
+            uploadZone.classList.remove('hidden');
+            // Clean the URL so refresh doesn't look messy
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
 
+        // --- UPLOAD LOGIC ---
         uploadZone.onclick = () => pdfInput.click();
 
         pdfInput.onchange = async (e) => {
@@ -95,33 +98,17 @@
                     text += content.items.map(s => s.str).join(" ");
                 }
 
-                // 2. Grok API Request
-                const response = await fetch("https://api.x.ai/v1/chat/completions", {
+                // 2. SECURE SERVERLESS FETCH
+                // We send the text to our internal /api/audit route on Vercel
+                const response = await fetch('/api/audit', {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${GROK_API_KEY}`
-                    },
-                    body: JSON.stringify({
-                        model: "grok-4-0709", // Current flagship reasoning model
-                        messages: [
-                            {
-                                role: "system",
-                                content: `ROLE: Senior M&A Attorney. CRITICAL INSTRUCTION: Exhaustive analysis. DO NOT SKIP sections. WORKFLOW: For every 'Red Flag', you must: 1) Identify Risk, 2) Locate Section, 3) Draft the 'Redline' fix (corrected text).`
-                            },
-                            {
-                                role: "user",
-                                content: `DOCUMENT TITLE: [Extract Title]
-RISK SCORE: [1-10]
-RED FLAGS: [List with Redlines]
-SUMMARY: [Impact overview]
-LEGAL NOTICE: For preliminary auditing purposes only; confirm with counsel.
-
-DOCUMENT TEXT: ${text.substring(0, 50000)}` // Safeguard for context window
-                            }
-                        ]
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ 
+                        text: text.substring(0, 50000) // Safeguard for Grok's context window
                     })
                 });
+
+                if (!response.ok) throw new Error("Audit service unavailable. Contact support.");
 
                 const data = await response.json();
                 
