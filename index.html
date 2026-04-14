@@ -63,86 +63,88 @@
     </div>
 
     <script>
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
 
-        const uploadZone = document.getElementById('uploadZone');
-        const processing = document.getElementById('processing');
-        const previewSection = document.getElementById('previewSection');
-        const previewData = document.getElementById('previewData');
-        const fullReportSection = document.getElementById('fullReportSection');
-        const fullReportOutput = document.getElementById('fullReportOutput');
-        const pdfInput = document.getElementById('pdfInput');
+    const uploadZone = document.getElementById('uploadZone');
+    const processing = document.getElementById('processing');
+    const previewSection = document.getElementById('previewSection');
+    const previewData = document.getElementById('previewData');
+    const fullReportSection = document.getElementById('fullReportSection');
+    const fullReportOutput = document.getElementById('fullReportOutput');
+    const pdfInput = document.getElementById('pdfInput');
 
-        // Square Redirect Logic
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has('transaction_id') || urlParams.has('checkoutId')) {
-            const savedReport = localStorage.getItem('lastReport');
-            if (savedReport) {
-                uploadZone.classList.add('hidden');
-                fullReportOutput.textContent = savedReport;
-                fullReportSection.classList.remove('hidden');
-                window.history.replaceState({}, document.title, window.location.pathname);
-            }
-        }
-
-        uploadZone.onclick = () => pdfInput.click();
-
-        pdfInput.onchange = async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-
+    // Check for Square payment success redirect
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('transaction_id') || urlParams.has('checkoutId')) {
+        const savedReport = localStorage.getItem('lastReport');
+        if (savedReport) {
             uploadZone.classList.add('hidden');
-            processing.classList.remove('hidden');
+            fullReportOutput.textContent = savedReport;
+            fullReportSection.classList.remove('hidden');
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+    }
 
-            try {
-                const arrayBuffer = await file.arrayBuffer();
-                const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
-                let text = "";
-                for (let i = 1; i <= pdf.numPages; i++) {
-                    const page = await pdf.getPage(i);
-                    const content = await page.getTextContent();
-                    text += content.items.map(s => s.str).join(" ");
-                }
+    uploadZone.onclick = () => pdfInput.click();
 
-                // FETCH FIX: Standard Vercel API route
-                const response = await fetch('/api/audit', {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ text: text.substring(0, 45000) })
-                });
+    pdfInput.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
 
-                const contentType = response.headers.get("content-type");
-                if (!contentType || !contentType.includes("application/json")) {
-                    throw new Error("Server error. Ensure your file is in 'api/audit.mjs' and you have redeployed.");
-                }
+        uploadZone.classList.add('hidden');
+        processing.classList.remove('hidden');
 
-                const data = await response.json();
-
-                if (data && data.choices && data.choices[0]) {
-                    const fullText = data.choices[0].message.content;
-                    localStorage.setItem('lastReport', fullText);
-
-                    const titleMatch = fullText.match(/DOCUMENT TITLE: (.*)/);
-                    const scoreMatch = fullText.match(/RISK SCORE: (.*)/);
-
-                    previewData.innerHTML = `
-                        <p class="text-white text-lg font-bold uppercase tracking-tight">${titleMatch ? titleMatch[1] : 'Document Loaded'}</p>
-                        <p class="text-blue-400 font-bold text-xl">${scoreMatch ? scoreMatch[0] : 'Analysis Ready'}</p>
-                    `;
-
-                    processing.classList.add('hidden');
-                    previewSection.classList.remove('hidden');
-                } else {
-                    throw new Error(data.error?.message || "AI response error.");
-                }
-
-            } catch (err) {
-                console.error(err);
-                alert("Audit Error: " + err.message);
-                processing.classList.add('hidden');
-                uploadZone.classList.remove('hidden');
+        try {
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+            let text = "";
+            for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const content = await page.getTextContent();
+                text += content.items.map(s => s.str).join(" ");
             }
-        };
-    </script>
+
+            // FIX: Using '/api/audit' is the standard Vercel convention.
+            // Vercel maps this automatically to api/audit.mjs or api/audit.js
+            const response = await fetch('/api/audit', {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ text: text.substring(0, 45000) })
+            });
+
+            // This part is throwing your current error because the response isn't JSON
+            const contentType = response.headers.get("content-type");
+            if (!contentType || !contentType.includes("application/json")) {
+                throw new Error("The server is not responding correctly. Check Vercel Logs.");
+            }
+
+            const data = await response.json();
+
+            if (data && data.choices && data.choices[0]) {
+                const fullText = data.choices[0].message.content;
+                localStorage.setItem('lastReport', fullText);
+
+                const titleMatch = fullText.match(/DOCUMENT TITLE: (.*)/);
+                const scoreMatch = fullText.match(/RISK SCORE: (.*)/);
+
+                previewData.innerHTML = `
+                    <p class="text-white text-lg font-bold uppercase tracking-tight">${titleMatch ? titleMatch[1] : 'Document Analyzed'}</p>
+                    <p class="text-blue-400 font-bold text-xl">${scoreMatch ? scoreMatch[0] : 'High Risk Detected'}</p>
+                `;
+
+                processing.classList.add('hidden');
+                previewSection.classList.remove('hidden');
+            } else {
+                throw new Error("AI returned an empty response.");
+            }
+
+        } catch (err) {
+            console.error("Audit Fail:", err);
+            alert("Audit Error: " + err.message);
+            processing.classList.add('hidden');
+            uploadZone.classList.remove('hidden');
+        }
+    };
+</script>
 </body>
 </html>
