@@ -24,7 +24,6 @@
     </div>
 
     <div class="w-full max-w-3xl space-y-6">
-        
         <div id="uploadZone" class="legal-card p-12 border-2 border-dashed border-zinc-800 hover:border-blue-500 transition-all cursor-pointer text-center">
             <input type="file" id="pdfInput" class="hidden" accept="application/pdf">
             <div class="space-y-4">
@@ -38,7 +37,7 @@
             <p class="text-blue-400 font-semibold animate-pulse uppercase tracking-widest text-xs">Axiom Agent is Analyzing Clauses...</p>
         </div>
 
-        <div id="previewSection" class="hidden space-y-6 animate-in fade-in duration-700">
+        <div id="previewSection" class="hidden space-y-6">
             <div class="legal-card p-6 border-l-4 border-yellow-500 bg-yellow-500/5">
                 <h3 class="text-yellow-500 font-bold text-sm uppercase mb-2">Preliminary Audit Complete</h3>
                 <div id="previewData" class="space-y-2"></div>
@@ -52,11 +51,6 @@
                 </a>
                 <p class="mt-4 text-[10px] text-zinc-600 uppercase tracking-widest">Secure Checkout via Square</p>
             </div>
-
-            <div class="legal-card p-8 blur-text opacity-40">
-                <p class="mb-2">RED FLAGS: - Missing Change of Control protection in Section 4... PROPOSED REDLINE: The Company shall provide notice...</p>
-                <p>SUMMARY: This instrument poses significant dilutive risk to any potential acquirer due to nominal exercise pricing...</p>
-            </div>
         </div>
 
         <div id="fullReportSection" class="hidden space-y-4">
@@ -65,7 +59,6 @@
                 <button onclick="window.print()" class="text-xs bg-zinc-800 hover:bg-zinc-700 px-4 py-2 rounded text-white border border-zinc-700 transition-colors">Export to PDF</button>
             </div>
             <div id="fullReportOutput" class="legal-card p-8 text-sm leading-relaxed text-zinc-300 whitespace-pre-wrap"></div>
-            <p class="text-[10px] text-zinc-600 text-center italic">Axiom Sentinel Proprietary Audit Engine v4.1 - Verified Transaction</p>
         </div>
     </div>
 
@@ -80,16 +73,16 @@
         const fullReportOutput = document.getElementById('fullReportOutput');
         const pdfInput = document.getElementById('pdfInput');
 
+        // Square Redirect Logic
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has('transaction_id') || urlParams.has('checkoutId')) {
             const savedReport = localStorage.getItem('lastReport');
             if (savedReport) {
                 uploadZone.classList.add('hidden');
-                previewSection.classList.add('hidden');
                 fullReportOutput.textContent = savedReport;
                 fullReportSection.classList.remove('hidden');
+                window.history.replaceState({}, document.title, window.location.pathname);
             }
-            window.history.replaceState({}, document.title, window.location.pathname);
         }
 
         uploadZone.onclick = () => pdfInput.click();
@@ -111,23 +104,21 @@
                     text += content.items.map(s => s.str).join(" ");
                 }
 
-                // CRITICAL FIX: Use the Vercel-standard route '/api/audit' 
-                // regardless of whether your file is audit.js or audit.mjs
+                // FETCH FIX: Standard Vercel API route
                 const response = await fetch('/api/audit', {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ text: text.substring(0, 50000) })
+                    body: JSON.stringify({ text: text.substring(0, 45000) })
                 });
 
-                // Safety check: Is it JSON?
                 const contentType = response.headers.get("content-type");
                 if (!contentType || !contentType.includes("application/json")) {
-                    throw new Error("Server returned HTML instead of JSON. Ensure your file is in the /api folder and you have redeployed on Vercel.");
+                    throw new Error("Server error. Ensure your file is in 'api/audit.mjs' and you have redeployed.");
                 }
 
                 const data = await response.json();
 
-                if (data && data.choices && data.choices[0] && data.choices[0].message) {
+                if (data && data.choices && data.choices[0]) {
                     const fullText = data.choices[0].message.content;
                     localStorage.setItem('lastReport', fullText);
 
@@ -142,11 +133,11 @@
                     processing.classList.add('hidden');
                     previewSection.classList.remove('hidden');
                 } else {
-                    throw new Error(data.error?.message || data.error || "The AI service returned an empty result.");
+                    throw new Error(data.error?.message || "AI response error.");
                 }
 
             } catch (err) {
-                console.error("Audit Fail:", err);
+                console.error(err);
                 alert("Audit Error: " + err.message);
                 processing.classList.add('hidden');
                 uploadZone.classList.remove('hidden');
