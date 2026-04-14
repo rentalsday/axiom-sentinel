@@ -70,7 +70,6 @@
     </div>
 
     <script>
-        // Fix 2: Explicitly set PDF Worker Source
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
 
         const uploadZone = document.getElementById('uploadZone');
@@ -112,15 +111,22 @@
                     text += content.items.map(s => s.str).join(" ");
                 }
 
-                const response = await fetch('axiom-sentinel/api/audit.mjs', {
+                // CRITICAL FIX: Use the Vercel-standard route '/api/audit' 
+                // regardless of whether your file is audit.js or audit.mjs
+                const response = await fetch('/api/audit', {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ text: text.substring(0, 50000) })
                 });
 
+                // Safety check: Is it JSON?
+                const contentType = response.headers.get("content-type");
+                if (!contentType || !contentType.includes("application/json")) {
+                    throw new Error("Server returned HTML instead of JSON. Ensure your file is in the /api folder and you have redeployed on Vercel.");
+                }
+
                 const data = await response.json();
 
-                // Fix 1 & Code Block B: Safety check for AI response
                 if (data && data.choices && data.choices[0] && data.choices[0].message) {
                     const fullText = data.choices[0].message.content;
                     localStorage.setItem('lastReport', fullText);
@@ -136,8 +142,7 @@
                     processing.classList.add('hidden');
                     previewSection.classList.remove('hidden');
                 } else {
-                    // This catches cases where Grok sends back an error message in JSON
-                    throw new Error(data.error?.message || data.error || "The AI service returned an empty result. Check your Grok API key and credits.");
+                    throw new Error(data.error?.message || data.error || "The AI service returned an empty result.");
                 }
 
             } catch (err) {
