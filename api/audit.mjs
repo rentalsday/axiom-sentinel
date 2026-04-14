@@ -20,7 +20,7 @@ export default async function handler(req, res) {
                 "Authorization": `Bearer ${apiKey.trim()}` // Force "Bearer" prefix
             },
             body: JSON.stringify({
-                model: "grok-4-0709",
+                model: "grok-4-1-fast-reasoning",
                 messages: [
                     { 
                         role: "system", 
