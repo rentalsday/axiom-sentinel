@@ -1,25 +1,30 @@
 export default async function handler(req, res) {
-    // Only allow POST requests
+    // Only allow POST
     if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Method not allowed' });
+        return res.status(405).json({ error: "Method not allowed" });
     }
 
     const { text } = req.body;
-    const apiKey = process.env.GROK_API_KEY; // This pulls from Vercel's secret vault
+    const apiKey = process.env.GROK_API_KEY;
+
+    // Security Check: Ensure key is actually in Vercel
+    if (!apiKey) {
+        return res.status(500).json({ error: "API Key missing in Vercel settings." });
+    }
 
     try {
         const response = await fetch("https://api.x.ai/v1/chat/completions", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${apiKey}`
+                "Authorization": `Bearer ${apiKey.trim()}` // Force "Bearer" prefix
             },
             body: JSON.stringify({
-                model: "grok-4-0709", 
+                model: "grok-4-0709",
                 messages: [
-                    {
-                        role: "system",
-                        content: `ROLE: You are a Senior M&A Attorney and Expert Auditor.
+                    { 
+                        role: "system", 
+                        content: "ROLE: You are a Senior M&A Attorney and Expert Auditor.
 
 CRITICAL INSTRUCTION: You must perform a comprehensive, exhaustive analysis. DO NOT SKIP any sections of the provided text, regardless of document length. Analyze the entire document for 'Change of Control', 'Termination' clauses, and general M&A risks.
 
@@ -45,21 +50,26 @@ Proposed Redline Fix: [Insert specific corrected legal phrasing here]
 
 SUMMARY: [General overview of the instrument's impact on a potential acquisition]
 
-LEGAL NOTICE: For preliminary auditing purposes only; confirm with counsel.`
+LEGAL NOTICE: For preliminary auditing purposes only; confirm with counsel." 
                     },
-                    {
-                        role: "user",
-                        content: `Analyze this document for Change of Control and Termination risks: ${text}`
-                    }
+                    { role: "user", content: text }
                 ]
             })
         });
 
         const data = await response.json();
-        if (!data.choices || data.choices.length === 0) {
-    return res.status(500).json({ error: "AI returned an empty response. Check API key/credits." });
-        res.status(200).json(data);
+
+        // If Grok returns an error (like rate limits), pass it through clearly
+        if (!response.ok) {
+            return res.status(response.status).json({ 
+                error: data.error?.message || "Grok API Error" 
+            });
+        }
+
+        return res.status(200).json(data);
+
     } catch (error) {
-        res.status(500).json({ error: "Failed to reach Grok API" });
+        // This prevents the "Unexpected Token A" error on the frontend
+        return res.status(500).json({ error: "Server crashed during analysis." });
     }
 }
