@@ -14,10 +14,10 @@
         .shimmer { background: linear-gradient(90deg, #0f0f12 25%, #1a1a1e 50%, #0f0f12 75%); background-size: 200% 100%; animation: shimmer 2s infinite; }
         @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
         @media print {
-            body { background: white !important; color: black !important; }
-            .legal-card { border: 1px solid #ddd !important; background: white !important; }
-            button, #uploadZone, #paymentWall, #previewSection, #processing { display: none !important; }
-            #fullReportSection { display: block !important; width: 100%; }
+            body { background: white !important; color: black !important; padding: 0 !important; }
+            .legal-card { border: 1px solid #ddd !important; background: white !important; shadow: none !important; }
+            button, #uploadZone, #paymentWall, #previewSection, #processing, .no-print { display: none !important; }
+            #fullReportSection { display: block !important; width: 100%; margin: 0; }
             .text-blue-400, .text-blue-500 { color: #2563eb !important; }
             .text-zinc-300, .text-zinc-400, .text-zinc-500 { color: #333 !important; }
         }
@@ -56,7 +56,6 @@
                 <a href="https://checkout.square.site/merchant/MLVGH4WA7D1RJ/checkout/SX2CLTL3BKNPSACS7TCIYN2Y" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-10 rounded-lg transition-all w-full md:w-auto">
                     Unlock Full Report ($499)
                 </a>
-                <p class="mt-4 text-[10px] text-zinc-600 uppercase tracking-widest">Secure Checkout via Square</p>
             </div>
         </div>
 
@@ -66,7 +65,7 @@
                     <h1 class="text-2xl font-bold text-white tracking-tighter uppercase">EXECUTIVE AUDIT SUMMARY</h1>
                     <p class="text-blue-500 text-xs font-bold uppercase tracking-widest">Confidential M&A Risk Intelligence</p>
                 </div>
-                <button onclick="window.print()" class="bg-white text-black text-xs font-bold px-4 py-2 rounded hover:bg-zinc-200 transition-colors no-print uppercase">
+                <button onclick="downloadProfessionalPDF()" class="bg-white text-black text-xs font-bold px-4 py-2 rounded hover:bg-zinc-200 transition-colors no-print uppercase">
                     Download PDF
                 </button>
             </div>
@@ -78,10 +77,8 @@
     </div>
 
     <script>
-        // ==========================================
         // TOGGLE FOR TESTING (Set to true to skip payment)
         const IS_DEBUG_MODE = true; 
-        // ==========================================
 
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
 
@@ -93,18 +90,34 @@
         const fullReportOutput = document.getElementById('fullReportOutput');
         const pdfInput = document.getElementById('pdfInput');
 
+        let currentDocTitle = "Audit_Report";
+
+        function downloadProfessionalPDF() {
+            const originalTitle = document.title;
+            // Shorten title for filename: Audit_Summary_NameOfDoc
+            const safeName = currentDocTitle.replace(/[^a-z0-9]/gi, '_').substring(0, 30);
+            document.title = `Audit_Summary_${safeName}`;
+            window.print();
+            document.title = originalTitle;
+        }
+
         function formatAuditReport(rawText) {
             if (!rawText) return "<p>No report data found.</p>";
+            
+            const title = rawText.match(/DOCUMENT TITLE: (.*)/)?.[1] || "Untitled Instrument";
+            currentDocTitle = title; // Global update for the download name
+
             const sections = {
-                title: rawText.match(/DOCUMENT TITLE: (.*)/)?.[1] || "Untitled Instrument",
+                title: title,
                 score: rawText.match(/RISK SCORE: (.*)/)?.[1] || "N/A",
                 redFlags: rawText.match(/RED FLAGS:([\s\S]*?)SUMMARY:/)?.[1] || "Analysis detailed below.",
                 summary: rawText.match(/SUMMARY:([\s\S]*?)LEGAL NOTICE:/)?.[1] || "Comprehensive audit complete.",
                 notice: rawText.match(/LEGAL NOTICE: (.*)/)?.[1] || "For preliminary auditing purposes only; confirm with counsel."
             };
+
             return `
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="legal-card p-6 bg-zinc-900/50"><p class="text-zinc-500 text-[10px] uppercase font-bold mb-1 tracking-widest">Instrument Identity</p><p class="text-white font-bold leading-tight">${sections.title}</p></div>
+                    <div class="legal-card p-6 bg-zinc-900/50"><p class="text-zinc-500 text-[10px] uppercase font-bold mb-1 tracking-widest tracking-tighter">Instrument Identity</p><p class="text-white font-bold leading-tight uppercase">${sections.title}</p></div>
                     <div class="legal-card p-6 border-l-4 border-blue-500 bg-blue-500/5 text-center"><p class="text-zinc-500 text-[10px] uppercase font-bold mb-1 tracking-widest">Aggregate Risk Profile</p><p class="text-3xl font-black text-blue-400">${sections.score}</p></div>
                 </div>
                 <div class="space-y-4">
@@ -160,15 +173,12 @@
                 if (data && data.choices && data.choices[0]) {
                     const fullText = data.choices[0].message.content;
                     localStorage.setItem('lastReport', fullText);
-
                     processing.classList.add('hidden');
 
                     if (IS_DEBUG_MODE) {
-                        // TEST MODE: Skip preview and payment wall
                         fullReportOutput.innerHTML = formatAuditReport(fullText);
                         fullReportSection.classList.remove('hidden');
                     } else {
-                        // PRODUCTION MODE: Show preview and payment wall
                         const titleMatch = fullText.match(/DOCUMENT TITLE: (.*)/);
                         const scoreMatch = fullText.match(/RISK SCORE: (.*)/);
                         previewData.innerHTML = `
