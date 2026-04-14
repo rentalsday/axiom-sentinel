@@ -13,20 +13,20 @@
         .accent-border { border-top: 4px solid #3b82f6; }
         .shimmer { background: linear-gradient(90deg, #0f0f12 25%, #1a1a1e 50%, #0f0f12 75%); background-size: 200% 100%; animation: shimmer 2s infinite; }
         @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-        /* Professional Print Styles */
         @media print {
-            body { background: white; color: black; p: 0; }
-            .legal-card { border: 1px solid #eee; background: white; shadow: none; }
-            button, #uploadZone, #paymentWall, #previewSection { display: none !important; }
+            body { background: white !important; color: black !important; }
+            .legal-card { border: 1px solid #ddd !important; background: white !important; }
+            button, #uploadZone, #paymentWall, #previewSection, #processing { display: none !important; }
             #fullReportSection { display: block !important; width: 100%; }
             .text-blue-400, .text-blue-500 { color: #2563eb !important; }
+            .text-zinc-300, .text-zinc-400, .text-zinc-500 { color: #333 !important; }
         }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center p-6 md:p-12">
 
-    <div class="w-full max-w-3xl text-center mb-12">
-        <h1 class="text-3xl font-bold tracking-tighter text-white mb-2">AXIOM <span class="text-blue-500">SENTINEL</span></h1>
+    <div class="w-full max-w-3xl text-center mb-12 no-print">
+        <h1 class="text-3xl font-bold tracking-tighter text-white mb-2 uppercase">AXIOM <span class="text-blue-500">SENTINEL</span></h1>
         <p class="text-zinc-500 text-sm uppercase tracking-widest text-xs">Autonomous M&A Risk Intelligence</p>
     </div>
 
@@ -36,22 +36,22 @@
             <div class="space-y-4">
                 <div class="text-blue-500 text-4xl mx-auto">📄</div>
                 <h3 class="text-lg font-medium text-white">Upload Agreement for Instant Triage</h3>
-                <p class="text-zinc-500 text-sm">Drag & Drop PDF to generate Risk Score and Sneak Preview</p>
+                <p class="text-zinc-500 text-sm">Drag & Drop PDF to generate Risk Score and Executive Preview</p>
             </div>
         </div>
 
         <div id="processing" class="hidden legal-card p-12 shimmer text-center max-w-3xl mx-auto">
-            <p class="text-blue-400 font-semibold animate-pulse uppercase tracking-widest text-xs">Axiom Agent is Analyzing Clauses...</p>
+            <p class="text-blue-400 font-semibold animate-pulse uppercase tracking-widest text-xs">Axiom Agent is Analyzing New Clauses...</p>
         </div>
 
-        <div id="previewSection" class="hidden space-y-6 max-w-3xl mx-auto">
+        <div id="previewSection" class="hidden space-y-6 max-w-3xl mx-auto no-print">
             <div class="legal-card p-6 border-l-4 border-yellow-500 bg-yellow-500/5">
-                <h3 class="text-yellow-500 font-bold text-sm uppercase mb-2">Preliminary Audit Complete</h3>
+                <h3 class="text-yellow-500 font-bold text-sm uppercase mb-2 tracking-tighter">Preliminary Audit Complete</h3>
                 <div id="previewData" class="space-y-2"></div>
             </div>
 
             <div id="paymentWall" class="legal-card p-8 accent-border text-center shadow-2xl">
-                <h2 class="text-xl font-semibold mb-2 text-white">Unlock Full Risk Report</h2>
+                <h2 class="text-xl font-semibold mb-2 text-white uppercase tracking-tighter">Unlock Full Risk Report</h2>
                 <p class="text-zinc-400 mb-6 text-sm">The agent has identified critical vulnerabilities and drafted <span class="text-white font-bold text-blue-400">Redline Fixes</span>. Pay to reveal the full audit.</p>
                 <a href="https://checkout.square.site/merchant/MLVGH4WA7D1RJ/checkout/SX2CLTL3BKNPSACS7TCIYN2Y" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-10 rounded-lg transition-all w-full md:w-auto">
                     Unlock Full Report ($499)
@@ -63,26 +63,26 @@
         <div id="fullReportSection" class="hidden space-y-6 w-full">
             <div class="flex justify-between items-end border-b border-zinc-800 pb-4">
                 <div>
-                    <h1 class="text-2xl font-bold text-white tracking-tighter">EXECUTIVE AUDIT SUMMARY</h1>
+                    <h1 class="text-2xl font-bold text-white tracking-tighter uppercase">EXECUTIVE AUDIT SUMMARY</h1>
                     <p class="text-blue-500 text-xs font-bold uppercase tracking-widest">Confidential M&A Risk Intelligence</p>
                 </div>
-                <button onclick="window.print()" class="bg-white text-black text-xs font-bold px-4 py-2 rounded hover:bg-zinc-200 transition-colors no-print">
-                    DOWNLOAD PDF
+                <button onclick="window.print()" class="bg-white text-black text-xs font-bold px-4 py-2 rounded hover:bg-zinc-200 transition-colors no-print uppercase">
+                    Download PDF
                 </button>
             </div>
-
-            <div id="fullReportOutput" class="space-y-8 py-4 text-zinc-300">
-                </div>
-
+            <div id="fullReportOutput" class="space-y-8 py-4 text-zinc-300"></div>
             <div class="border-t border-zinc-800 pt-6 text-center">
-                <p class="text-[10px] text-zinc-600 uppercase tracking-widest italic">
-                    Axiom Sentinel Proprietary Audit Engine v4.1 • Secure Transaction Verified
-                </p>
+                <p class="text-[10px] text-zinc-600 uppercase tracking-widest italic">Axiom Sentinel Proprietary Audit Engine v4.1 • Secure Transaction Verified</p>
             </div>
         </div>
     </div>
 
     <script>
+        // ==========================================
+        // TOGGLE FOR TESTING (Set to true to skip payment)
+        const IS_DEBUG_MODE = true; 
+        // ==========================================
+
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
 
         const uploadZone = document.getElementById('uploadZone');
@@ -93,51 +93,28 @@
         const fullReportOutput = document.getElementById('fullReportOutput');
         const pdfInput = document.getElementById('pdfInput');
 
-        // PROFESSIONAL FORMATTER ENGINE
         function formatAuditReport(rawText) {
+            if (!rawText) return "<p>No report data found.</p>";
             const sections = {
                 title: rawText.match(/DOCUMENT TITLE: (.*)/)?.[1] || "Untitled Instrument",
                 score: rawText.match(/RISK SCORE: (.*)/)?.[1] || "N/A",
-                redFlags: rawText.match(/RED FLAGS:([\s\S]*?)SUMMARY:/)?.[1] || "",
-                summary: rawText.match(/SUMMARY:([\s\S]*?)LEGAL NOTICE:/)?.[1] || "",
+                redFlags: rawText.match(/RED FLAGS:([\s\S]*?)SUMMARY:/)?.[1] || "Analysis detailed below.",
+                summary: rawText.match(/SUMMARY:([\s\S]*?)LEGAL NOTICE:/)?.[1] || "Comprehensive audit complete.",
                 notice: rawText.match(/LEGAL NOTICE: (.*)/)?.[1] || "For preliminary auditing purposes only; confirm with counsel."
             };
-
             return `
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="legal-card p-6 bg-zinc-900/50">
-                        <p class="text-zinc-500 text-[10px] uppercase font-bold mb-1 tracking-widest">Instrument Identity</p>
-                        <p class="text-white font-bold leading-tight">${sections.title}</p>
-                    </div>
-                    <div class="legal-card p-6 border-l-4 border-blue-500 bg-blue-500/5 text-center">
-                        <p class="text-zinc-500 text-[10px] uppercase font-bold mb-1 tracking-widest">Aggregate Risk Profile</p>
-                        <p class="text-3xl font-black text-blue-400">${sections.score}</p>
-                    </div>
+                    <div class="legal-card p-6 bg-zinc-900/50"><p class="text-zinc-500 text-[10px] uppercase font-bold mb-1 tracking-widest">Instrument Identity</p><p class="text-white font-bold leading-tight">${sections.title}</p></div>
+                    <div class="legal-card p-6 border-l-4 border-blue-500 bg-blue-500/5 text-center"><p class="text-zinc-500 text-[10px] uppercase font-bold mb-1 tracking-widest">Aggregate Risk Profile</p><p class="text-3xl font-black text-blue-400">${sections.score}</p></div>
                 </div>
-
                 <div class="space-y-4">
                     <h3 class="text-sm font-bold text-white uppercase tracking-widest border-b border-zinc-800 pb-2">Critical Vulnerabilities & Redlines</h3>
-                    <div class="space-y-4">
-                        ${sections.redFlags.split('\n').filter(line => line.trim().length > 5).map(line => `
-                            <div class="p-5 bg-zinc-900/30 rounded-lg border border-zinc-800 text-sm leading-relaxed">
-                                ${line.replace(/Proposed Redline Fix:/g, '<br><br><strong class="text-blue-400 uppercase text-xs tracking-tighter">Strategic Redline Solution:</strong>')}
-                            </div>
-                        `).join('')}
-                    </div>
+                    <div class="space-y-4 text-sm leading-relaxed">${sections.redFlags.split('\n').filter(line => line.trim().length > 10).map(line => `<div class="p-5 bg-zinc-900/30 rounded-lg border border-zinc-800">${line.replace(/Proposed Redline Fix:/g, '<br><br><strong class="text-blue-400 uppercase text-xs">Strategic Redline Solution:</strong>')}</div>`).join('')}</div>
                 </div>
-
-                <div class="legal-card p-8 accent-border">
-                    <h3 class="text-sm font-bold text-white uppercase tracking-widest mb-4">Transactional Impact Analysis</h3>
-                    <p class="text-sm leading-relaxed text-zinc-400">${sections.summary}</p>
-                </div>
-
-                <div class="text-[10px] text-zinc-500 italic border-l-2 border-zinc-800 pl-4">
-                    <strong>LEGAL NOTICE:</strong> ${sections.notice}
-                </div>
-            `;
+                <div class="legal-card p-8 accent-border"><h3 class="text-sm font-bold text-white uppercase tracking-widest mb-4">Transactional Impact Analysis</h3><p class="text-sm leading-relaxed text-zinc-400">${sections.summary}</p></div>
+                <div class="text-[10px] text-zinc-500 italic border-l-2 border-zinc-800 pl-4"><strong>LEGAL NOTICE:</strong> ${sections.notice}</div>`;
         }
 
-        // Handle Redirect from Square
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has('transaction_id') || urlParams.has('checkoutId')) {
             const savedReport = localStorage.getItem('lastReport');
@@ -155,7 +132,10 @@
             const file = e.target.files[0];
             if (!file) return;
 
+            localStorage.removeItem('lastReport');
             uploadZone.classList.add('hidden');
+            previewSection.classList.add('hidden');
+            fullReportSection.classList.add('hidden');
             processing.classList.remove('hidden');
 
             try {
@@ -174,33 +154,31 @@
                     body: JSON.stringify({ text: text.substring(0, 45000) })
                 });
 
-                const contentType = response.headers.get("content-type");
-                if (!contentType || !contentType.includes("application/json")) {
-                    throw new Error("Server Error. Check Vercel Logs for details.");
-                }
-
+                if (!response.ok) throw new Error("Server communication error.");
                 const data = await response.json();
 
                 if (data && data.choices && data.choices[0]) {
                     const fullText = data.choices[0].message.content;
                     localStorage.setItem('lastReport', fullText);
 
-                    const titleMatch = fullText.match(/DOCUMENT TITLE: (.*)/);
-                    const scoreMatch = fullText.match(/RISK SCORE: (.*)/);
-
-                    previewData.innerHTML = `
-                        <p class="text-white text-lg font-bold uppercase tracking-tight">${titleMatch ? titleMatch[1] : 'Document Analyzed'}</p>
-                        <p class="text-blue-400 font-bold text-xl">${scoreMatch ? scoreMatch[0] : 'High Risk Profile Detected'}</p>
-                    `;
-
                     processing.classList.add('hidden');
-                    previewSection.classList.remove('hidden');
-                } else {
-                    throw new Error("Invalid AI response.");
-                }
 
+                    if (IS_DEBUG_MODE) {
+                        // TEST MODE: Skip preview and payment wall
+                        fullReportOutput.innerHTML = formatAuditReport(fullText);
+                        fullReportSection.classList.remove('hidden');
+                    } else {
+                        // PRODUCTION MODE: Show preview and payment wall
+                        const titleMatch = fullText.match(/DOCUMENT TITLE: (.*)/);
+                        const scoreMatch = fullText.match(/RISK SCORE: (.*)/);
+                        previewData.innerHTML = `
+                            <p class="text-white text-lg font-bold uppercase tracking-tight">${titleMatch ? titleMatch[1] : 'Document Analyzed'}</p>
+                            <p class="text-blue-400 font-bold text-xl">${scoreMatch ? scoreMatch[0] : 'High Risk'}</p>
+                        `;
+                        previewSection.classList.remove('hidden');
+                    }
+                }
             } catch (err) {
-                console.error("Audit Fail:", err);
                 alert("Audit Error: " + err.message);
                 processing.classList.add('hidden');
                 uploadZone.classList.remove('hidden');
