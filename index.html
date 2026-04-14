@@ -41,8 +41,7 @@
         <div id="previewSection" class="hidden space-y-6 animate-in fade-in duration-700">
             <div class="legal-card p-6 border-l-4 border-yellow-500 bg-yellow-500/5">
                 <h3 class="text-yellow-500 font-bold text-sm uppercase mb-2">Preliminary Audit Complete</h3>
-                <div id="previewData" class="space-y-2">
-                    </div>
+                <div id="previewData" class="space-y-2"></div>
             </div>
 
             <div id="paymentWall" class="legal-card p-8 accent-border text-center shadow-2xl">
@@ -65,13 +64,15 @@
                 <h2 class="text-xl font-bold text-white uppercase tracking-tight">Full Audit Results</h2>
                 <button onclick="window.print()" class="text-xs bg-zinc-800 hover:bg-zinc-700 px-4 py-2 rounded text-white border border-zinc-700 transition-colors">Export to PDF</button>
             </div>
-            <div id="fullReportOutput" class="legal-card p-8 text-sm leading-relaxed text-zinc-300 whitespace-pre-wrap">
-            </div>
+            <div id="fullReportOutput" class="legal-card p-8 text-sm leading-relaxed text-zinc-300 whitespace-pre-wrap"></div>
             <p class="text-[10px] text-zinc-600 text-center italic">Axiom Sentinel Proprietary Audit Engine v4.1 - Verified Transaction</p>
         </div>
     </div>
 
     <script>
+        // Fix 2: Explicitly set PDF Worker Source
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+
         const uploadZone = document.getElementById('uploadZone');
         const processing = document.getElementById('processing');
         const previewSection = document.getElementById('previewSection');
@@ -80,9 +81,7 @@
         const fullReportOutput = document.getElementById('fullReportOutput');
         const pdfInput = document.getElementById('pdfInput');
 
-        // --- SQUARE SUCCESS CHECK ---
         const urlParams = new URLSearchParams(window.location.search);
-        // Look for Square's redirect parameter
         if (urlParams.has('transaction_id') || urlParams.has('checkoutId')) {
             const savedReport = localStorage.getItem('lastReport');
             if (savedReport) {
@@ -91,7 +90,6 @@
                 fullReportOutput.textContent = savedReport;
                 fullReportSection.classList.remove('hidden');
             }
-            // Clean the URL for a professional look
             window.history.replaceState({}, document.title, window.location.pathname);
         }
 
@@ -105,7 +103,6 @@
             processing.classList.remove('hidden');
 
             try {
-                // 1. Extract PDF Text
                 const arrayBuffer = await file.arrayBuffer();
                 const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
                 let text = "";
@@ -115,34 +112,36 @@
                     text += content.items.map(s => s.str).join(" ");
                 }
 
-                // 2. Secure Serverless API Call (Vercel hides your key)
                 const response = await fetch('/api/audit', {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ text: text.substring(0, 50000) })
                 });
 
-                if (!response.ok) throw new Error("Agent busy. Please retry.");
-
                 const data = await response.json();
-                const fullText = data.choices[0].message.content;
 
-                // 3. Save to LocalStorage to survive the Square Redirect
-                localStorage.setItem('lastReport', fullText);
+                // Fix 1 & Code Block B: Safety check for AI response
+                if (data && data.choices && data.choices[0] && data.choices[0].message) {
+                    const fullText = data.choices[0].message.content;
+                    localStorage.setItem('lastReport', fullText);
 
-                // 4. Extract Title and Score for the Freemium Preview
-                const titleMatch = fullText.match(/DOCUMENT TITLE: (.*)/);
-                const scoreMatch = fullText.match(/RISK SCORE: (.*)/);
+                    const titleMatch = fullText.match(/DOCUMENT TITLE: (.*)/);
+                    const scoreMatch = fullText.match(/RISK SCORE: (.*)/);
 
-                previewData.innerHTML = `
-                    <p class="text-white text-lg font-bold uppercase tracking-tight">${titleMatch ? titleMatch[1] : 'Document Loaded'}</p>
-                    <p class="text-blue-400 font-bold text-xl">${scoreMatch ? scoreMatch[0] : 'Analysis Ready'}</p>
-                `;
+                    previewData.innerHTML = `
+                        <p class="text-white text-lg font-bold uppercase tracking-tight">${titleMatch ? titleMatch[1] : 'Document Loaded'}</p>
+                        <p class="text-blue-400 font-bold text-xl">${scoreMatch ? scoreMatch[0] : 'Analysis Ready'}</p>
+                    `;
 
-                processing.classList.add('hidden');
-                previewSection.classList.remove('hidden');
+                    processing.classList.add('hidden');
+                    previewSection.classList.remove('hidden');
+                } else {
+                    // This catches cases where Grok sends back an error message in JSON
+                    throw new Error(data.error?.message || data.error || "The AI service returned an empty result. Check your Grok API key and credits.");
+                }
 
             } catch (err) {
+                console.error("Audit Fail:", err);
                 alert("Audit Error: " + err.message);
                 processing.classList.add('hidden');
                 uploadZone.classList.remove('hidden');
