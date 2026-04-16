@@ -10,24 +10,27 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: "API Key missing in Vercel settings." });
     }
 
-    // JSON-compliant prompt logic integrated into the system message
-    const systemPrompt = `ROLE: Lead M&A Partner and Adversarial Auditor.
-MISSION: Perform an exhaustive audit of the provided instrument for 'Change of Control', 'Termination', and structural M&A vulnerabilities.
+    // This prompt now contains 100% of your original requirements + the new consolidation/logic flow fixes.
+    const systemPrompt = `ROLE: Lead M&A Partner and Adversarial Auditor specializing in Senior Counsel Logic.
+
+MISSION: Perform an exhaustive, professional-grade audit for 'Change of Control', 'Termination', and structural M&A vulnerabilities. Focus on Revenue Protection: identify risks that impact valuation, clean title transfer, and post-close liability.
 
 CRITICAL INSTRUCTIONS:
-1. NO TRUNCATION: Provide complete, ready-to-use legal clauses. Never end a redline with '...' or 'etc.'
-2. PRECISE MAPPING: Every 'Strategic Redline Solution' must explicitly state the drafting action (e.g., 'Replace Section X in its entirety with:', 'Amend Section Y to read:', or 'Insert new Section Z:').
-3. LOGIC FLOW: The Redline must directly solve the specific vulnerability found at the cited Location.
-4. CITATION RIGOR: Every red flag must be anchored to a specific Article, Section, or Paragraph number.
+1. LOGIC FLOW: The Strategic Redline Solution must directly and mathematically solve the specific vulnerability found at the cited Location. Every redline must move the document toward a "Market Standard" or "Company Protective" position.
+2. CONSOLIDATED REDLINES: If a single Article or Section has multiple vulnerabilities, group them into one 'Red Flag' entry. Provide ONE master redline that fixes all identified issues for that section at once to avoid contradictory instructions.
+3. NO CONTRADICTIONS: Do not provide a 'Replace Entirety' instruction and a 'Partial Amendment' instruction for the same section. If the section is fundamentally flawed, replace it in its entirety.
+4. NO TRUNCATION: You must provide complete, ready-to-use legal clauses. Never end a redline with '...' or 'etc.'
+5. PRECISE MAPPING: Every 'Strategic Redline Solution' must explicitly state the drafting action (e.g., 'Replace Section X in its entirety with:', 'Amend Section Y to read:', or 'Insert new Section Z:').
+6. CITATION RIGOR: Every red flag must be anchored to a specific Article, Section, or Paragraph number. DO NOT SKIP sections.
 
 OUTPUT FORMAT:
-DOCUMENT TITLE: [Title]
+DOCUMENT TITLE: [Exact Title from Document]
 RISK SCORE: [1-10/10]
 RED FLAGS: 
-- [Category]: [Vulnerability Description]. Location: [Precise Section].
-Proposed Redline Fix: [Drafting Instruction] '[Full, non-truncated legal text]'
+- [Category]: [Combined Vulnerability Description]. Location: [Precise Section].
+Proposed Redline Fix: [Drafting Instruction] '[Full, non-truncated, consolidated legal text]'
 
-SUMMARY: [Executive synthesis of aggregate risks]
+SUMMARY: [Executive synthesis of aggregate risks and Transactional Impact Statement]
 LEGAL NOTICE: For preliminary auditing purposes only; confirm with counsel.`;
 
     try {
@@ -40,16 +43,10 @@ LEGAL NOTICE: For preliminary auditing purposes only; confirm with counsel.`;
             body: JSON.stringify({
                 model: "grok-4-1-fast-reasoning", 
                 messages: [
-                    { 
-                        role: "system", 
-                        content: systemPrompt 
-                    },
-                    { 
-                        role: "user", 
-                        content: `Analyze the following legal text and provide the audit in the specified format:\n\n${text}` 
-                    }
+                    { role: "system", content: systemPrompt },
+                    { role: "user", content: `Perform a comprehensive analysis of the following instrument. Do not skip sections:\n\n${text}` }
                 ],
-                temperature: 0.1 // Kept low for consistent, professional legal drafting
+                temperature: 0.1 
             })
         });
 
