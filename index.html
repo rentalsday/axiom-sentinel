@@ -15,6 +15,9 @@
         .shimmer { background: linear-gradient(90deg, #0f0f12 25%, #1a1a1e 50%, #0f0f12 75%); background-size: 200% 100%; animation: shimmer 2s infinite; }
         @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
         
+        /* The "Teaser" Blur Effect */
+        .blur-text { filter: blur(5px); user-select: none; pointer-events: none; opacity: 0.5; }
+        
         h1, h2, h3 { font-weight: 700; tracking: -0.02em; }
         .stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: #71717a; }
 
@@ -47,21 +50,6 @@
         <p class="text-zinc-400 text-lg max-w-2xl mx-auto mb-10 font-light">
             Professional-grade autonomous auditing for M&A instruments. We don't just find vulnerabilities; we draft the <strong>Redline Fixes</strong> to protect your transaction.
         </p>
-        
-        <div class="flex flex-wrap justify-center gap-8 opacity-50 grayscale hover:grayscale-0 transition-all duration-700">
-            <div class="flex flex-col items-center">
-                <span class="text-[10px] font-bold uppercase tracking-widest mb-2">Security Protocol</span>
-                <p class="text-xs font-semibold italic">Volatile RAM Processing Only</p>
-            </div>
-            <div class="flex flex-col items-center">
-                <span class="text-[10px] font-bold uppercase tracking-widest mb-2">Data Policy</span>
-                <p class="text-xs font-semibold italic">Zero-Retention Architecture</p>
-            </div>
-            <div class="flex flex-col items-center">
-                <span class="text-[10px] font-bold uppercase tracking-widest mb-2">Output Quality</span>
-                <p class="text-xs font-semibold italic">Senior Counsel Logic</p>
-            </div>
-        </div>
     </header>
 
     <main class="w-full max-w-4xl px-6 pb-24">
@@ -89,52 +77,49 @@
         </div>
 
         <div id="previewSection" class="hidden space-y-6 no-print">
-            <div class="legal-card p-8 border-l-4 border-blue-600 bg-blue-600/5">
-                <div class="flex justify-between items-start mb-4">
-                    <span class="stat-label">Initial Intelligence Report</span>
-                    <span class="px-2 py-1 bg-blue-600 text-[10px] font-black rounded text-white">READY</span>
+            <div class="legal-card overflow-hidden border-l-4 border-blue-600 bg-blue-600/5">
+                <div class="p-8">
+                    <div class="flex justify-between items-start mb-6">
+                        <span class="stat-label">Initial Intelligence Triage</span>
+                        <span class="px-2 py-1 bg-blue-600 text-[10px] font-black rounded text-white">ANALYSIS COMPLETE</span>
+                    </div>
+                    <div id="previewData" class="space-y-6"></div>
                 </div>
-                <div id="previewData" class="space-y-4"></div>
             </div>
 
-            <div id="paymentWall" class="legal-card p-10 text-center shadow-2xl relative overflow-hidden">
-                <div class="absolute top-0 right-0 p-4 opacity-10 text-6xl">🔒</div>
-                <h2 class="text-2xl font-bold mb-3 text-white">Access the Full Strategic Audit</h2>
+            <div id="paymentWall" class="legal-card p-10 text-center shadow-2xl relative overflow-hidden bg-zinc-900/50">
+                <h2 class="text-2xl font-bold mb-3 text-white">Unlock Senior Counsel Redlines</h2>
                 <p class="text-zinc-400 mb-8 text-sm max-w-md mx-auto">
-                    The Axiom Agent has identified vulnerabilities and generated <span class="text-blue-400 font-bold underline decoration-2">Direct Redline Fixes</span>. Unlock the complete report to secure your deal.
+                    The agent has flagged specific vulnerabilities above. To access the <span class="text-blue-400 font-bold underline">Proposed Redline Fixes</span> and the full executive summary, proceed to secure checkout.
                 </p>
                 <a href="https://checkout.square.site/merchant/MLVGH4WA7D1RJ/checkout/VPK7UAFTJSKHDV77FNTMZTZR" class="accent-gradient text-white font-bold py-5 px-12 rounded-lg transition-all hover:scale-[1.02] active:scale-[0.98] inline-block shadow-lg shadow-blue-500/20">
-                    UNLOCK AUDIT RESULTS ($499)
+                    UNLOCK FULL AUDIT ($499)
                 </a>
                 
                 <div class="pt-8 border-t border-zinc-900 w-full mt-6 flex flex-col items-center">
-                    <p class="text-[10px] text-zinc-500 uppercase tracking-widest mb-3">One-Time Invite Code</p>
+                    <p class="text-[10px] text-zinc-500 uppercase tracking-widest mb-3">Redeem Invite Code</p>
                     <div class="flex space-x-2">
-                        <input type="text" id="promoCode" placeholder="Enter Code" class="bg-zinc-900 border border-zinc-800 rounded px-4 py-2 text-xs text-white focus:outline-none focus:border-blue-500 uppercase">
-                        <button onclick="applyPromoCode()" class="bg-zinc-800 text-white text-[10px] font-bold px-4 py-2 rounded hover:bg-zinc-700 uppercase">Redeem</button>
+                        <input type="text" id="promoCode" placeholder="Enter Code" class="bg-zinc-800 border border-zinc-700 rounded px-4 py-2 text-xs text-white focus:outline-none focus:border-blue-500 uppercase">
+                        <button onclick="applyPromoCode()" class="bg-zinc-700 text-white text-[10px] font-bold px-4 py-2 rounded hover:bg-zinc-600 uppercase">Verify</button>
                     </div>
                     <p id="promoError" class="text-red-500 text-[10px] mt-2 hidden"></p>
                 </div>
-                <p class="mt-6 text-[10px] text-zinc-600 uppercase tracking-widest">Global Encrypted Checkout • One-Time Access</p>
             </div>
         </div>
 
         <div id="fullReportSection" class="hidden space-y-8 w-full animate-in fade-in duration-1000">
             <div class="flex justify-between items-end border-b border-zinc-800 pb-6">
                 <div>
-                    <h1 class="text-3xl font-black text-white tracking-tighter">EXECUTIVE RISK AUDIT</h1>
-                    <p class="text-blue-500 text-xs font-bold uppercase tracking-widest">Instrument Intelligence Briefing</p>
+                    <h1 class="text-3xl font-black text-white tracking-tighter uppercase">EXECUTIVE RISK AUDIT</h1>
+                    <p class="text-blue-500 text-xs font-bold uppercase tracking-widest">Axiom Sentinel Briefing</p>
                 </div>
                 <button onclick="downloadProfessionalPDF()" class="bg-white text-black text-[10px] font-black px-6 py-2 rounded hover:bg-zinc-200 transition-colors no-print uppercase tracking-widest">
                     Export to PDF
                 </button>
             </div>
-
             <div id="fullReportOutput" class="space-y-10 py-6"></div>
-
             <footer class="border-t border-zinc-900 pt-12 text-center">
-                <p class="text-[10px] text-zinc-700 uppercase tracking-widest mb-2">Axiom Sentinel Intelligence System • Build 4.1</p>
-                <p class="text-[9px] text-zinc-800">THIS REPORT IS GENERATED BY AUTONOMOUS AGENTS. DATA IS PROCESSED IN VOLATILE MEMORY AND PURGED UPON SESSION COMPLETION.</p>
+                <p class="text-[10px] text-zinc-700 uppercase tracking-widest mb-2">Axiom Sentinel • Build 4.1</p>
             </footer>
         </div>
     </main>
@@ -144,7 +129,6 @@
         const VALID_PROMO_CODES = ["VIPFREE", "BETA2026", "PARTNER_ACCESS"];
 
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
-
 
         const uploadZone = document.getElementById('uploadZone');
         const processing = document.getElementById('processing');
@@ -235,6 +219,7 @@
                 </div>`;
         }
 
+        // Logic to clear URL after payment success
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has('transaction_id') || urlParams.has('checkoutId')) {
             const savedReport = localStorage.getItem('lastReport');
@@ -275,17 +260,40 @@
                     const fullText = data.choices[0].message.content;
                     localStorage.setItem('lastReport', fullText);
                     processing.classList.add('hidden');
+
                     if (IS_DEBUG_MODE) {
                         fullReportOutput.innerHTML = formatAuditReport(fullText);
                         fullReportSection.classList.remove('hidden');
                     } else {
+                        // REFINED PREVIEW LOGIC
                         const titleMatch = fullText.match(/DOCUMENT TITLE: (.*)/);
                         const scoreMatch = fullText.match(/RISK SCORE: (.*)/);
+                        const flags = fullText.match(/RED FLAGS:([\s\S]*?)SUMMARY:/)?.[1] || "";
+                        
+                        // Pick first 2 flags to "tease"
+                        const flagLines = flags.split('\n').filter(l => l.trim().length > 15).slice(0, 2);
+
                         previewData.innerHTML = `
-                            <p class="stat-label">Identified Instrument</p>
-                            <p class="text-white text-xl font-bold uppercase tracking-tight mb-4">${titleMatch ? titleMatch[1] : 'Audit Complete'}</p>
-                            <p class="stat-label">Initial Risk Estimate</p>
-                            <p class="text-blue-500 font-black text-4xl">${scoreMatch ? scoreMatch[1] : 'Analyzed'}</p>`;
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <p class="stat-label">Instrument</p>
+                                    <p class="text-white font-bold uppercase truncate">${titleMatch ? titleMatch[1] : 'M&A DOCUMENT'}</p>
+                                </div>
+                                <div>
+                                    <p class="stat-label">Vulnerability Level</p>
+                                    <p class="text-blue-500 font-black text-2xl">${scoreMatch ? scoreMatch[1] : 'HIGH'}</p>
+                                </div>
+                            </div>
+                            <div class="space-y-3 pt-4 border-t border-zinc-800">
+                                <p class="stat-label">Vulnerabilities Detected:</p>
+                                ${flagLines.map(line => `
+                                    <div class="text-xs text-zinc-400 font-medium border-l-2 border-zinc-700 pl-3">
+                                        ${line.split(':')[0]} <span class="blur-text ml-2">CONFIDENTIAL RISK DATA DETECTED</span>
+                                    </div>
+                                `).join('')}
+                                <div class="text-xs text-zinc-500 italic">+ 3 additional strategic redlines...</div>
+                            </div>
+                        `;
                         previewSection.classList.remove('hidden');
                     }
                 }
