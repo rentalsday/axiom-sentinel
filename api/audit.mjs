@@ -10,27 +10,25 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: "API Key missing in Vercel settings." });
     }
 
-    // This prompt now contains 100% of your original requirements + the new consolidation/logic flow fixes.
+    // REFINED PROMPT: Forced structure for side-by-side parsing
     const systemPrompt = `ROLE: Lead M&A Partner and Adversarial Auditor specializing in Senior Counsel Logic.
 
-MISSION: Perform an exhaustive, professional-grade audit for 'Change of Control', 'Termination', and structural M&A vulnerabilities. Focus on Revenue Protection: identify risks that impact valuation, clean title transfer, and post-close liability.
+MISSION: Perform an exhaustive audit for 'Change of Control', 'Termination', and structural M&A vulnerabilities. Identify risks impacting valuation, clean title transfer, and post-close liability.
 
-CRITICAL INSTRUCTIONS:
-1. LOGIC FLOW: The Strategic Redline Solution must directly and mathematically solve the specific vulnerability found at the cited Location. Every redline must move the document toward a "Market Standard" or "Company Protective" position.
-2. CONSOLIDATED REDLINES: If a single Article or Section has multiple vulnerabilities, group them into one 'Red Flag' entry. Provide ONE master redline that fixes all identified issues for that section at once to avoid contradictory instructions.
-3. NO CONTRADICTIONS: Do not provide a 'Replace Entirety' instruction and a 'Partial Amendment' instruction for the same section. If the section is fundamentally flawed, replace it in its entirety.
-4. NO TRUNCATION: You must provide complete, ready-to-use legal clauses. Never end a redline with '...' or 'etc.'
-5. PRECISE MAPPING: Every 'Strategic Redline Solution' must explicitly state the drafting action (e.g., 'Replace Section X in its entirety with:', 'Amend Section Y to read:', or 'Insert new Section Z:').
-6. CITATION RIGOR: Every red flag must be anchored to a specific Article, Section, or Paragraph number. DO NOT SKIP sections.
+STRICT OUTPUT RULES:
+1. Every Red Flag MUST follow this exact syntax for the frontend parser:
+   - [Category]: [Vulnerability Description]. Location: [Section X]. Proposed Redline Fix: [Drafting Instruction] '[Full Legal Text]'
+2. No empty headers. Every "Proposed Redline Fix:" must be immediately followed by the specific fix.
+3. Use 'Replace Section [X] in its entirety with:' for fundamental flaws.
+4. Ensure the redline is professional, non-truncated, and solves the identified revenue leak or legal risk.
 
 OUTPUT FORMAT:
-DOCUMENT TITLE: [Exact Title from Document]
-RISK SCORE: [1-10/10]
+DOCUMENT TITLE: [Exact Title]
+RISK SCORE: [Score]/10
 RED FLAGS: 
-- [Category]: [Combined Vulnerability Description]. Location: [Precise Section].
-Proposed Redline Fix: [Drafting Instruction] '[Full, non-truncated, consolidated legal text]'
+- [Risk Category]: [Description]. Location: [Section]. Proposed Redline Fix: [Instruction] '[Legal Clause]'
 
-SUMMARY: [Executive synthesis of aggregate risks and Transactional Impact Statement]
+SUMMARY: [Executive synthesis of aggregate risks]
 LEGAL NOTICE: For preliminary auditing purposes only; confirm with counsel.`;
 
     try {
@@ -41,7 +39,7 @@ LEGAL NOTICE: For preliminary auditing purposes only; confirm with counsel.`;
                 "Authorization": `Bearer ${apiKey.trim()}`
             },
             body: JSON.stringify({
-                model: "grok-4-1-fast-reasoning", 
+                model: "grok-beta", // Use "grok-beta" or "grok-2-1212" for standard reliable parsing
                 messages: [
                     { role: "system", content: systemPrompt },
                     { role: "user", content: `Perform a comprehensive analysis of the following instrument. Do not skip sections:\n\n${text}` }
