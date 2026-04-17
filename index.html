@@ -81,8 +81,8 @@
         <div id="processing" class="hidden legal-card mt-8 p-20 shimmer text-center no-print">
             <div class="flex flex-col items-center space-y-4">
                 <div class="w-12 h-12 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                <p class="text-blue-400 font-bold uppercase tracking-widest text-xs">Simulating Adversarial Review...</p>
-                <p class="text-zinc-500 text-[10px]">Scanning for Change of Control & Liquidity Triggers</p>
+                <p class="text-blue-400 font-bold uppercase tracking-widest text-xs" id="processingText">Simulating Adversarial Review...</p>
+                <p class="text-zinc-500 text-[10px]" id="processingSubtext">Scanning for Change of Control & Liquidity Triggers</p>
             </div>
         </div>
 
@@ -138,6 +138,8 @@
 
         const uploadZone = document.getElementById('uploadZone');
         const processing = document.getElementById('processing');
+        const processingText = document.getElementById('processingText');
+        const processingSubtext = document.getElementById('processingSubtext');
         const trustSection = document.getElementById('trustSection');
         const previewSection = document.getElementById('previewSection');
         const previewData = document.getElementById('previewData');
@@ -146,6 +148,31 @@
         const pdfInput = document.getElementById('pdfInput');
 
         let currentDocTitle = "Audit_Report";
+
+        function resetUI() {
+            processing.classList.add('hidden');
+            uploadZone.classList.remove('hidden');
+            trustSection.classList.remove('hidden');
+            previewSection.classList.add('hidden');
+            fullReportSection.classList.add('hidden');
+            pdfInput.value = "";
+            // Restore default text
+            processingText.innerText = "Simulating Adversarial Review...";
+            processingSubtext.innerText = "Scanning for Change of Control & Liquidity Triggers";
+        }
+
+        function validateDocumentRelevance(text) {
+            const maKeywords = [
+                'warrant', 'agreement', 'purchase', 'shareholder', 'merger', 'acquisition', 
+                'closing', 'fundamental', 'liquidity', 'common stock', 'indemnification', 
+                'disclosure schedule', 'transaction', 'renegotiation', 'liability'
+            ];
+            const lowerText = text.toLowerCase();
+            const hitCount = maKeywords.reduce((count, word) => count + (lowerText.includes(word) ? 1 : 0), 0);
+            
+            // If fewer than 3 M&A keywords are present, document is likely irrelevant
+            return hitCount >= 3;
+        }
 
         function applyPromoCode() {
             const input = document.getElementById('promoCode').value.trim().toUpperCase();
@@ -258,6 +285,21 @@
                     const content = await page.getTextContent();
                     text += content.items.map(s => s.str).join(" ");
                 }
+
+                // RELEVANCE GATE CHECK
+                if (!validateDocumentRelevance(text)) {
+                    processingText.innerText = "Document Mismatch Detected";
+                    processingText.classList.replace('text-blue-400', 'text-red-500');
+                    processingSubtext.innerText = "This instrument does not appear to be an M&A-related document. Volatile RAM Purged.";
+                    
+                    setTimeout(() => {
+                        processingText.classList.replace('text-red-500', 'text-blue-400');
+                        resetUI();
+                        alert("Classification Error: The uploaded document is not a recognized M&A instrument (SPA, Warrant, or Purchase Agreement). Please check your file.");
+                    }, 4000);
+                    return;
+                }
+
                 const response = await fetch('/api/audit', {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -304,9 +346,7 @@
                 }
             } catch (err) {
                 alert("Audit Error: " + err.message);
-                processing.classList.add('hidden');
-                uploadZone.classList.remove('hidden');
-                trustSection.classList.remove('hidden');
+                resetUI();
             }
         };
     </script>
