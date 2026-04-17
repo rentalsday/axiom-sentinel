@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Axiom Sentinel | Autonomous M&A Risk Intelligence</title>
+    <title>Axiom Redline | Autonomous M&A Risk Intelligence</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -31,7 +31,7 @@
     <nav class="w-full max-w-6xl flex justify-between items-center p-8 no-print">
         <div class="flex items-center space-x-2">
             <div class="w-2 h-8 bg-blue-600"></div>
-            <h1 class="text-xl font-bold tracking-tighter uppercase">AXIOM <span class="text-blue-500">SENTINEL</span></h1>
+            <h1 class="text-xl font-bold tracking-tighter uppercase">AXIOM <span class="text-blue-500">REDLINE</span></h1>
         </div>
         <div class="flex items-center space-x-6">
             <span class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest flex items-center">
@@ -43,7 +43,7 @@
     <header class="w-full max-w-4xl text-center py-12 px-6 no-print">
         <h2 class="text-4xl md:text-5xl mb-6 leading-tight">Identify Deal-Killing Risks <br><span class="text-zinc-500">Before the First Billable Hour.</span></h2>
         <p class="text-zinc-400 text-lg max-w-2xl mx-auto mb-10 font-light">
-            Professional-grade autonomous auditing for M&A instruments. We don't just find vulnerabilities; we draft the <strong>Redline Fixes</strong> to protect your transaction.
+            Professional-grade autonomous auditing for M&A instruments. We don't just find vulnerabilities; we draft the <strong>Strategic Redline Fixes</strong> to protect your transaction.
         </p>
     </header>
 
@@ -121,7 +121,7 @@
             <div class="flex justify-between items-end border-b border-zinc-800 pb-6">
                 <div>
                     <h1 class="text-3xl font-black text-white tracking-tighter uppercase">EXECUTIVE RISK AUDIT</h1>
-                    <p class="text-blue-500 text-xs font-bold uppercase tracking-widest">Axiom Sentinel Briefing</p>
+                    <p class="text-blue-500 text-xs font-bold uppercase tracking-widest">Axiom Redline Briefing</p>
                 </div>
                 <button onclick="downloadProfessionalPDF()" class="bg-white text-black text-[10px] font-black px-6 py-2 rounded hover:bg-zinc-200 transition-colors no-print uppercase tracking-widest">
                     Export to PDF
@@ -177,7 +177,7 @@
         function downloadProfessionalPDF() {
             const originalTitle = document.title;
             const safeName = currentDocTitle.replace(/[^a-z0-9]/gi, '_').substring(0, 30);
-            document.title = `Axiom_Audit_${safeName}`;
+            document.title = `Axiom_Redline_Audit_${safeName}`;
             window.print();
             document.title = originalTitle;
         }
